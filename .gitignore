@@ -128,5 +128,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Adding custom commands - Shiva 
-Snips/
+# Adding custom commands 
