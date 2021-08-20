@@ -1,11 +1,14 @@
 <h1><p align="center"> 
     Setup B.1
 </h1>
-**Name:** Shiva Gupta
-**Student ID:** 102262514 
-**Unit Code:** COS30018
-**Task Number:** 1
-**Repo link:** 
+
+<ul>
+    <li><emp>Name: </emp>Shiva Gupta</li>
+    <li><emp>Student ID: </emp>102262514</li>
+    <li><emp>Unit Code: </emp>COS30018</li>
+    <li><emp>Task Number: </emp>1</li>
+    <li><emp>Repo link: </emp>https://github.com/gshiva53/COS30018-102262514</li>
+</ul>
 
 ****
 This report documents the process undertaken to get projects **v0.1, p1 and p2** to run and understand the codebase for v0.1. **requirements.txt** files for every project have been attached with the project with the commands to setup the virtual environments. 
