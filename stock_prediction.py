@@ -7,24 +7,36 @@
 # Youtuble link: https://www.youtube.com/watch?v=PuZY9q-aKLw
 # By: NeuralNine
 
-# Need to install the following:
-# pip install numpy
-# pip install matplotlib
-# pip install pandas
-# pip install tensorflow
-# pip install scikit-learn
-# pip install pandas-datareader
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pandas_datareader as web
 import datetime as dt
+from pandas_datareader import data
+from sklearn.utils.validation import column_or_1d
 import tensorflow as tf
+import os
+from sklearn.model_selection import train_test_split
+import pdb
 
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM, InputLayer
+
+# Global Values
+TRAIN_START = dt.datetime(2012, 5, 23)     # Start date to read
+TRAIN_END = dt.datetime(2020, 1, 7)       # End date to read
+DATA_SOURCE = "yahoo"
+COMPANY = "FB"
+FEATURE_COLUMNS = ['Open', 'High', 'Low', 'Volume', 'Close', 'Adj Close']
+PRICE_VALUE = FEATURE_COLUMNS[4]    
+PREDICTION_DAYS = 60 # Original
+scaler = MinMaxScaler(feature_range=(0, 1))
+x_train, y_train = [], []
+x_test, y_test = [], []
+column_scaler = {}
+original_data = []
+data = [] 
 
 #------------------------------------------------------------------------------
 # Load Data
@@ -32,14 +44,100 @@ from tensorflow.keras.layers import Dense, Dropout, LSTM, InputLayer
 # 1) Check if data has been saved before. 
 # If so, load the saved data
 # If not, save the data into a directory
-#------------------------------------------------------------------------------
-DATA_SOURCE = "yahoo"
-COMPANY = "FB"
+# ------------------------------------------------------------------------------
+def shuffle_in_unison(a, b): 
+    state = np.random.get_state()
+    np.random.shuffle(a)
+    np.random.set_state(state)
+    np.random.shuffle(b)
 
-TRAIN_START = dt.datetime(2012, 5, 23)     # Start date to read
-TRAIN_END = dt.datetime(2020, 1, 7)       # End date to read
+# create these folders if they do not exist
+if not os.path.isdir("results"):
+    os.mkdir("results")
 
-data = web.DataReader(COMPANY, DATA_SOURCE, TRAIN_START, TRAIN_END) # Read data using yahoo
+if not os.path.isdir("logs"): 
+    os.mkdir("logs")
+
+if not os.path.isdir("data"): 
+    os.mkdir("data")
+
+def load_data(ticker = COMPANY, n_steps = 50, scale = True, shuffle = True, lookup_step = 1, split_by_date = True, 
+            test_size = 0.2, feature_columns = FEATURE_COLUMNS,
+            prediction_days = PREDICTION_DAYS, start_date = TRAIN_START, end_date = TRAIN_END): 
+
+    global x_train, y_train;
+    global x_test, y_test; 
+    global data
+    global scaled_data
+    global column_scaler
+    global scaler
+    global original_data
+    global PRICE_VALUE 
+    global DATA_SOURCE
+    global PREDICTION_DAYS
+
+    if isinstance(ticker, str): 
+        data = web.DataReader(ticker, DATA_SOURCE, start_date, end_date)
+    elif isinstance(ticker, pd.DataFrame): 
+        data = ticker
+    else: 
+        raise TypeError("ticker can be either a str or a 'pd.DataFrame' instance")
+
+    for col in feature_columns:
+        assert col in data.columns, f"'{col}' does not exist in the dataframe."
+
+    # scaler = MinMaxScaler(feature_range=(0, 1))
+    # scaled_data = scaler.fit_transform(data[PRICE_VALUE].values.reshape(-1, 1)) 
+
+    if scale: 
+        for column in feature_columns:
+            # data[column] = scaler.fit_transform(data[PRICE_VALUE].values.reshape(-1, 1))
+            scaled_data = scaler.fit_transform(data[PRICE_VALUE].values.reshape(-1, 1))
+            column_scaler = scaler
+
+    data.dropna(inplace = True)
+
+    # return the original dataset 
+    original_data = data.copy() 
+
+    scaled_data = scaled_data[:,0] # Turn the 2D array back to a 1D array
+    # Prepare the data
+    for x in range(prediction_days, len(scaled_data)):
+        x_train.append(scaled_data[x-prediction_days:x])
+        y_train.append(scaled_data[x])
+
+    # Convert them into an array
+    x_train, y_train = np.array(x_train), np.array(y_train)
+    # Now, x_train is a 2D array(p,q) where p = len(scaled_data) - PREDICTION_DAYS
+    # and q = PREDICTION_DAYS; while y_train is a 1D array(p)
+
+    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+    # We now reshape x_train into a 3D array(p, q, 1); Note that x_train 
+    # is an array of p inputs with each input being a 2D array 
+
+    # result = {}
+    # if "date" not in data.columns: 
+    #     data["date"] = data.index
+
+    if split_by_date:
+        train_samples = int((1 - test_size) * len(x_train))
+        x_train = x_train[:train_samples]
+        y_train = y_train[:train_samples]
+        pdb.set_trace() 
+        x_test = x_train[train_samples:]
+        y_test = y_train[train_samples:]
+        if shuffle: 
+            shuffle_in_unison(x_train, y_train)
+            shuffle_in_unison(x_test, y_test)
+    else: 
+        x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=test_size, shuffle=shuffle)
+    # pdb.set_trace()
+   
+load_data() 
+pdb.set_trace() 
+# ------------------------------------------------------------------------------
+
+# data = web.DataReader(COMPANY, DATA_SOURCE, TRAIN_START, TRAIN_END) # Read data using yahoo
 # It could be a bug with pandas_datareader.DataReader() but it
 # does read also the date before the start date. Thus, you'll see that 
 # it includes the date 22/05/2012 in data!
@@ -55,12 +153,12 @@ data = web.DataReader(COMPANY, DATA_SOURCE, TRAIN_START, TRAIN_END) # Read data 
 # 2) Use a different price value eg. mid-point of Open & Close
 # 3) Change the Prediction days
 #------------------------------------------------------------------------------
-PRICE_VALUE = "Close"
+# PRICE_VALUE = "Close"
 
-scaler = MinMaxScaler(feature_range=(0, 1)) 
+# scaler = MinMaxScaler(feature_range=(0, 1)) 
 # Note that, by default, feature_range=(0, 1). Thus, if you want a different 
 # feature_range (min,max) then you'll need to specify it here
-scaled_data = scaler.fit_transform(data[PRICE_VALUE].values.reshape(-1, 1)) 
+# scaled_data = scaler.fit_transform(data[PRICE_VALUE].values.reshape(-1, 1)) 
 # Flatten and normalise the data
 # First, we reshape a 1D array(n) to 2D array(n,1)
 # We have to do that because sklearn.preprocessing.fit_transform()
@@ -77,26 +175,26 @@ scaled_data = scaler.fit_transform(data[PRICE_VALUE].values.reshape(-1, 1))
 # given to reshape so as to maintain the same number of elements.
 
 # Number of days to look back to base the prediction
-PREDICTION_DAYS = 60 # Original
+# PREDICTION_DAYS = 60 # Original
 
 # To store the training data
-x_train = []
-y_train = []
+# x_train = []
+# y_train = []
 
-scaled_data = scaled_data[:,0] # Turn the 2D array back to a 1D array
-# Prepare the data
-for x in range(PREDICTION_DAYS, len(scaled_data)):
-    x_train.append(scaled_data[x-PREDICTION_DAYS:x])
-    y_train.append(scaled_data[x])
+# scaled_data = scaled_data[:,0] # Turn the 2D array back to a 1D array
+# # Prepare the data
+# for x in range(PREDICTION_DAYS, len(scaled_data)):
+#     x_train.append(scaled_data[x-PREDICTION_DAYS:x])
+#     y_train.append(scaled_data[x])
 
-# Convert them into an array
-x_train, y_train = np.array(x_train), np.array(y_train)
-# Now, x_train is a 2D array(p,q) where p = len(scaled_data) - PREDICTION_DAYS
-# and q = PREDICTION_DAYS; while y_train is a 1D array(p)
+# # Convert them into an array
+# x_train, y_train = np.array(x_train), np.array(y_train)
+# # Now, x_train is a 2D array(p,q) where p = len(scaled_data) - PREDICTION_DAYS
+# # and q = PREDICTION_DAYS; while y_train is a 1D array(p)
 
-x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
-# We now reshape x_train into a 3D array(p, q, 1); Note that x_train 
-# is an array of p inputs with each input being a 2D array 
+# x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+# # We now reshape x_train into a 3D array(p, q, 1); Note that x_train 
+# # is an array of p inputs with each input being a 2D array 
 
 #------------------------------------------------------------------------------
 # Build the Model
@@ -109,7 +207,7 @@ x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 model = Sequential() # Basic neural network
 # See: https://www.tensorflow.org/api_docs/python/tf/keras/Sequential
 # for some useful examples
-
+pdb.set_trace()
 model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
 # This is our first hidden layer which also spcifies an input layer. 
 # That's why we specify the input shape for this layer; 
@@ -156,7 +254,7 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Now we are going to train this model with our training data 
 # (x_train, y_train)
-model.fit(x_train, y_train, epochs=25, batch_size=32)
+model.fit(x_train, y_train, epochs=5, batch_size=32)
 # Other parameters to consider: How many rounds(epochs) are we going to 
 # train our model? Typically, the more the better, but be careful about
 # overfitting!
@@ -194,7 +292,7 @@ test_data = web.DataReader(COMPANY, DATA_SOURCE, TEST_START, TEST_END)
 test_data = test_data[1:]
 
 actual_prices = test_data[PRICE_VALUE].values
-
+# pdb.set_trace() 
 total_dataset = pd.concat((data[PRICE_VALUE], test_data[PRICE_VALUE]), axis=0)
 
 model_inputs = total_dataset[len(total_dataset) - len(test_data) - PREDICTION_DAYS:].values

@@ -56,7 +56,7 @@ def load_data(ticker, n_steps=50, scale=True, shuffle=True, lookup_step=1, split
 
     # make sure that the passed feature_columns exist in the dataframe
     for col in feature_columns:
-        assert col in df.columns, f"'{col}' does not exist in the dataframe."
+        assert col in df.columns, print("does not exist in the dataframe.")
 
     # add date as a column
     if "date" not in df.columns:
