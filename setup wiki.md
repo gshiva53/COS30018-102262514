@@ -1,11 +1,14 @@
 <h1><p align="center"> 
     Setup B.1
 </h1>
-**Name:** Shiva Gupta
-**Student ID:** 102262514 
-**Unit Code:** COS30018
-**Task Number:** 1
-**Repo link:** 
+
+<ul>
+    <li><emp>Name: </emp>Shiva Gupta</li>
+    <li><emp>Student ID: </emp>102262514</li>
+    <li><emp>Unit Code: </emp>COS30018</li>
+    <li><emp>Task Number: </emp>1</li>
+    <li><emp>Repo link: </emp>https://github.com/gshiva53/COS30018-102262514</li>
+</ul>
 
 ****
 This report documents the process undertaken to get projects **v0.1, p1 and p2** to run and understand the codebase for v0.1. **requirements.txt** files for every project have been attached with the project with the commands to setup the virtual environments. 
@@ -22,7 +25,7 @@ The process to setup the environment and using it on windows with python 3.9 and
 $ pip install virtualenv
 ```
 
-![Installing virtual environment](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\installing virtualenv.PNG)
+![Installing virtual environment](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/installing%20virtualenv.PNG)
 
 1. Now, to use the virtual environments we first make a environment directory to keep all the environments in one place. 
 2. To make our virtual environment we do: 
@@ -82,9 +85,9 @@ $ pip install scikit-learn
 
 5. Installing Libraries 
 
-![Installing Libraries_1](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\Installing Libraries_1.PNG)
+![Installing Libraries_1](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/Installing%20Libraries_1.PNG)
 
-![Installing Libraries_2](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\Installing Libraries_2.PNG)
+![Installing Libraries_2](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/Installing%20Libraries_2.PNG)
 
 
 
@@ -94,7 +97,7 @@ $ pip install scikit-learn
 >python ./stock-prediction.py
 ```
 
-![v0.1_code_running](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\v0.1_code_running.PNG)
+![v0.1_code_running](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/v0.1_code_running.PNG)
 
 ****
 
@@ -110,9 +113,9 @@ For predicting the stock prices the code needs to train on the previous data and
 
 1. installing Libraries 
 
-![installing libraries_1_p1](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\installing libraries_1_p1.PNG)
+![installing libraries_1_p1](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/installing%20libraries_1_p1.PNG)
 
-![installing libraries_2_p1](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\installing libraries_2_p1.PNG)
+![installing libraries_2_p1](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/installing%20libraries_2_p1.PNG)
 
 2. Change parameters in the 'parameters.py' file if needed. Here we change the `EPOCH` value from 500 to 50 just to test if the project runs in less time.
 
@@ -122,13 +125,13 @@ EPOCH = 50
 
 2. Training p1
 
-![training_p1_1](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\training_p1_1.PNG)
+![training_p1_1](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/training_p1_1.PNG)
 
-![training_p1_2](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\training_p1_2.PNG)
+![training_p1_2](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/training_p1_2.PNG)
 
 3. Running p1
 
-![running_p1](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\running_p1.PNG)
+![running_p1](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/running_p1.PNG)
 
 
 
@@ -175,7 +178,7 @@ After setting up the environment we move on to running the code. First we need t
 $ python runallfromlist.py tw50.csv 20 50
 ```
 
-![preparing_dataset_step_1_p2](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\preparing_dataset_step_1_p2.PNG)
+![preparing_dataset_step_1_p2](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/preparing_dataset_step_1_p2.PNG)
 
 After training the model we generate a data set using the command below. 
 **Preparing Dataset Step 2**
@@ -184,7 +187,7 @@ After training the model we generate a data set using the command below.
 $ python generatebigdata.py dataset 20_50 bigdata_20_50
 ```
 
-![preparing_dataset_step_2_p2.PNG](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\preparing_dataset_step_2_p2.PNG)
+![preparing_dataset_step_2_p2.PNG](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week 1 - Setup/preparing_dataset_step_2_p2.PNG)
 
 The next logical step is to build the model and the command is
 
@@ -192,5 +195,5 @@ The next logical step is to build the model and the command is
 $ python myDeepCNN.py -i dataset/bigdata_20_50
 ```
 
-![Building the model](D:\Semester 2 2021\COS300018 - Intelligent Systems\COS30018-102262514\snips\Week 1 - Setup\building_the_model_p2.PNG)
+![Building the model](https://github.com/gshiva53/COS30018-102262514/blob/main/snips/Week%201%20-%20Setup/building_the_model_p2.PNG)
 
