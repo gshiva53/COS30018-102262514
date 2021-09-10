@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, LSTM
+from tensorflow.keras.layers import Dense, Dropout, LSTM, Bidirectional
 
 # Load data
 company = "FB"
@@ -33,20 +33,58 @@ for x in range(prediction_days, len(scaled_data)):
 x_train, y_train = np.array(x_train), np.array(y_train)
 x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
+
 # build the model
-model = Sequential()
+# ---------------------------------------------------------------------------------------
+# model = Sequential()
+#
+# model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+# model.add(Dropout(0.2))
+# model.add(LSTM(units=50, return_sequences=True))
+# model.add(Dropout(0.2))
+# model.add(LSTM(units=50))
+# model.add(Dropout(0.2))
+# model.add(Dense(units=1))  # Prediction of the next closest price
+#
+# model.compile(optimizer='adam', loss='mean_squared_error')
+# model.fit(x_train, y_train, epochs=3, batch_size=32)
 
-model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
-model.add(Dropout(0.2))
-model.add(LSTM(units=50, return_sequences=True))
-model.add(Dropout(0.2))
-model.add(LSTM(units=50))
-model.add(Dropout(0.2))
-model.add(Dense(units=1))  # Prediction of the next closest price
 
-model.compile(optimizer='adam', loss='mean_squared_error')
+# --------------------------------------------------------------------------------------
+def create_model(sequence_length, n_features, units=50, cell=LSTM, n_layers=2, dropout=0.2,
+                 loss='mean_squared_error', optimizer='adam', bidirectional=False):
+    model = Sequential()
+
+    for i in range(n_layers):
+        if i == 0:
+            # first layer
+            if bidirectional:
+                model.add(Bidirectional(cell(units, return_sequences=True),
+                                        batch_input_shape=(None, sequence_length, n_features)))
+            else:
+                model.add(cell(units, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+        elif i == n_layers - 1:
+            # last layer
+            if bidirectional:
+                model.add(Bidirectional(cell(units, return_sequences=False)))
+            else:
+                model.add(cell(units, return_sequences=False))
+        else:
+            # Hidden layers
+            if bidirectional:
+                model.add(bidirectional(cell(units, return_sequences=True)))
+            else:
+                model.add(cell(units, return_sequences=True))
+        model.add(Dropout(dropout))
+    model.add(Dense(units))
+    model.compile(optimizer=optimizer, loss=loss)
+    return model
+
+
+model = create_model(50, 1)
+
 model.fit(x_train, y_train, epochs=3, batch_size=32)
-
+# ----------------------------------------------------------------------------------
 # Test the model accuracy on existing data
 # Load test data
 test_start = dt.datetime(2020, 1, 1)
@@ -83,12 +121,6 @@ predicted_prices = scaler.inverse_transform(predicted_prices)
 # plt.ylabel(f'{company} Share price')
 # plt.legend()
 # plt.show()
-# --------------------------------------
-# mpl.plot(
-#     predicted_prices,
-#     type="candle",
-#     style="yahoo"
-# )
 # --------------------------------------
 def plot_graph(avg_window):
     avg = data['Close'].rolling(window=avg_window, min_periods=1).mean()

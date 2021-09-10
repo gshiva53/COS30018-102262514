@@ -231,7 +231,6 @@ predicted_prices = scaler.inverse_transform(predicted_prices)
 
 
 fplt.plot(
-    ,
     type='candle',
     ylabel=f"Actual {COMPANY} Price"
 )
