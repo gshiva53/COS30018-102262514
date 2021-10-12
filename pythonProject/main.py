@@ -1,3 +1,5 @@
+import pdb
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -5,6 +7,10 @@ import pandas_datareader as web
 import datetime as dt
 import mplfinance as mpl
 import plotly.graph_objects as go
+
+from pandas.plotting import lag_plot
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
 
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
@@ -32,7 +38,6 @@ for x in range(prediction_days, len(scaled_data)):
 
 x_train, y_train = np.array(x_train), np.array(y_train)
 x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
-
 
 # build the model
 # ---------------------------------------------------------------------------------------
@@ -81,9 +86,9 @@ def create_model(sequence_length, n_features, units=50, cell=LSTM, n_layers=2, d
     return model
 
 
-model = create_model(50, 1)
+_model = create_model(50, 1)
 
-model.fit(x_train, y_train, epochs=3, batch_size=32)
+_model.fit(x_train, y_train, epochs=3, batch_size=32)
 # ----------------------------------------------------------------------------------
 # Test the model accuracy on existing data
 # Load test data
@@ -109,7 +114,45 @@ for x in range(prediction_days, len(model_inputs)):
 x_test = np.array(x_test)
 x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
-predicted_prices = model.predict(x_test)
+# -----------------------------------------------------------------------
+train_data, test_data = data[0:int(len(data)*0.7)], data[int(len(data)*0.7):]
+
+training_data = train_data['Close'].values
+test_data = test_data['Close'].values
+
+model_predictions = []
+history = [x for x in training_data]
+N_test_observations = len(test_data)
+
+for time_point in range(N_test_observations):
+    model = ARIMA(history, order=(1, 1, 0))
+    model_fit = model.fit()
+    output = model_fit.forecast()
+    yhat = output[0]
+    model_predictions.append(yhat)
+    true_test_value = test_data[time_point]
+    history.append(true_test_value)
+
+MSE_error = mean_squared_error(test_data, model_predictions)
+print('Testing Mean Squared Error is {}'.format(MSE_error))
+# ------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------
+test_set_range = data[int(len(data)*0.7):].index
+
+plt.plot(test_set_range, model_predictions, color='blue', marker='o',
+         linestyle='dashed', label='Predicted Price')
+
+plt.plot(test_set_range, test_data, color='red', label='Actual Price')
+
+plt.title('Facebook Price Prediction')
+plt.xlabel('Date')
+plt.ylabel('Prices')
+plt.legend()
+plt.show()
+# ------------------------------------------------------------------------
+
+predicted_prices = _model.predict(x_test)
 predicted_prices = scaler.inverse_transform(predicted_prices)
 
 
@@ -171,6 +214,7 @@ real_data = [model_inputs[len(model_inputs) - prediction_days:, 0]]
 real_data = np.array(real_data)
 real_data = np.reshape(real_data, (real_data.shape[0], real_data.shape[1], 1))
 
-prediction = model.predict(real_data)
+prediction = _model.predict(real_data)
 prediction = scaler.inverse_transform(prediction)
-print(f"Prediction: {prediction}")
+print(f"Prediction using LSTM model: {prediction}")
+print(f"Prediction using ARIMA model: {model_predictions}")
