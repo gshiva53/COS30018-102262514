@@ -218,3 +218,6 @@ prediction = _model.predict(real_data)
 prediction = scaler.inverse_transform(prediction)
 print(f"Prediction using LSTM model: {prediction}")
 print(f"Prediction using ARIMA model: {model_predictions}")
+
+combined_prediction = (prediction[-1] + model_predictions[-1])/2
+print(f"Prediction using ensemble approach: {combined_prediction}")
