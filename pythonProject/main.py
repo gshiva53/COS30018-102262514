@@ -17,8 +17,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM, Bidirectional
 
 # Load data
-company = "FB"
-start = dt.datetime(2020, 1, 1)
+company = "AMZN"
+start = dt.datetime(2019, 1, 1)
 end = dt.datetime.now()
 
 data = web.DataReader(company, 'yahoo', start, end)
