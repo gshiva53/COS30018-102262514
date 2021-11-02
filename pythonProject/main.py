@@ -18,8 +18,8 @@ from tensorflow.keras.layers import Dense, Dropout, LSTM, Bidirectional
 
 # Load data
 company = "FB"
-start = dt.datetime(2012, 1, 1)
-end = dt.datetime(2020, 1, 1)
+start = dt.datetime(2020, 1, 1)
+end = dt.datetime.now()
 
 data = web.DataReader(company, 'yahoo', start, end)
 
@@ -38,6 +38,67 @@ for x in range(prediction_days, len(scaled_data)):
 
 x_train, y_train = np.array(x_train), np.array(y_train)
 x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+
+
+# Extending the model to include RSI indicator
+# ---------------------------------------------------------------------------------------
+def Plot_RSI(days):
+    delta = data['Adj Close'].diff(1)
+    delta.dropna(inplace=True)
+
+    positive = delta.copy()
+    negative = delta.copy()
+
+    positive[positive < 0] = 0
+    negative[negative > 0] = 0
+
+    days = days  # default is 14
+
+    average_gain = positive.rolling(window=days).mean()
+    average_loss = abs(negative.rolling(window=days).mean())
+
+    relative_strength = average_gain / average_loss
+    RSI = 100.0 - (100.0 / (1.0 + relative_strength))
+
+    combined = pd.DataFrame()
+    combined['Adj Close'] = data['Adj Close']
+    combined['RSI'] = RSI
+
+    # plotting the Adjusted Close value
+    plt.figure(figsize=(12, 8))
+    ax1 = plt.subplot(211)
+    ax1.plot(combined.index, combined['Adj Close'], color='lightgray')
+    ax1.set_title("Adjusted Close Price", color='white')
+
+    ax1.grid(True, color='#555555')
+    ax1.set_axisbelow(True)
+    ax1.set_facecolor('black')
+    ax1.figure.set_facecolor('#121212')
+    ax1.tick_params(axis='both', colors='white')
+
+    # plotting the RSI indicator
+    ax2 = plt.subplot(212, sharex=ax1)
+    ax2.plot(combined.index, combined['RSI'], color='lightgray')
+    ax2.axhline(0, linestyle='--', alpha=0.5, color='#ff0000')
+    ax2.axhline(10, linestyle='--', alpha=0.5, color='#ffaa00')
+    ax2.axhline(20, linestyle='--', alpha=0.5, color='#00ff00')
+    ax2.axhline(30, linestyle='--', alpha=0.5, color='#cccccc')
+    ax2.axhline(70, linestyle='--', alpha=0.5, color='#cccccc')
+    ax2.axhline(80, linestyle='--', alpha=0.5, color='#00ff00')
+    ax2.axhline(90, linestyle='--', alpha=0.5, color='#ffaa00')
+    ax2.axhline(100, linestyle='--', alpha=0.5, color='#ff0000')
+
+    ax2.set_title("RSI Value")
+    ax2.grid(False)
+    ax2.set_axisbelow(True)
+    ax2.set_facecolor('black')
+    ax2.tick_params(axis='both', colors='white')
+
+    plt.show()
+
+
+Plot_RSI(14)
+# ---------------------------------------------------------------------------------------
 
 # build the model
 # ---------------------------------------------------------------------------------------
@@ -115,7 +176,7 @@ x_test = np.array(x_test)
 x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
 # -----------------------------------------------------------------------
-train_data, test_data = data[0:int(len(data)*0.7)], data[int(len(data)*0.7):]
+train_data, test_data = data[0:int(len(data) * 0.7)], data[int(len(data) * 0.7):]
 
 training_data = train_data['Close'].values
 test_data = test_data['Close'].values
@@ -138,7 +199,7 @@ print('Testing Mean Squared Error is {}'.format(MSE_error))
 # ------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------
-test_set_range = data[int(len(data)*0.7):].index
+test_set_range = data[int(len(data) * 0.7):].index
 
 plt.plot(test_set_range, model_predictions, color='blue', marker='o',
          linestyle='dashed', label='Predicted Price')
@@ -219,5 +280,5 @@ prediction = scaler.inverse_transform(prediction)
 print(f"Prediction using LSTM model: {prediction}")
 print(f"Prediction using ARIMA model: {model_predictions}")
 
-combined_prediction = (prediction[-1] + model_predictions[-1])/2
+combined_prediction = (prediction[-1] + model_predictions[-1]) / 2
 print(f"Prediction using ensemble approach: {combined_prediction}")
